@@ -6,18 +6,18 @@
 #include <string.h>
 #include "rsa.h"
 
-char buffer[1024];
+unsigned char buffer[1024];
 const int MAX_DIGITS = 50;
 int i,j = 0;
 
 //struct public_key_class{
-//    long long modulus;
-//    long long exponent;
+//    unsigned long long modulus;
+//    unsigned long long exponent;
 //};
 //
 //struct private_key_class{
-//    long long modulus;
-//    long long exponent;
+//    unsigned long long modulus;
+//    unsigned long long exponent;
 //};
 
 
@@ -43,7 +43,7 @@ long long ExtEuclid(long long a, long long b)
     return y;
 }
 
-long long rsa_modExp(long long b, long long e, long long m)
+unsigned long long rsa_modExp(unsigned long long b, unsigned long long e, unsigned long long m)
 {
     if (b < 0 || e < 0 || m <= 0){
         exit(1);
@@ -62,13 +62,13 @@ long long rsa_modExp(long long b, long long e, long long m)
 
 void rsa_genKeys(struct public_key_class *pub, struct private_key_class *priv)
 {
-    long long p = 76213;
-    long long q = 19553;
+    unsigned long long p = 76213;
+    unsigned long long q = 19553;
 
-    long long e = powl(2, 8) + 1;
-    long long d = 0;
-    long long max = 0;
-    long long phi_max = 0;
+    unsigned long long e = powl(2, 8) + 1;
+    unsigned long long d = 0;
+    unsigned long long max = 0;
+    unsigned long long phi_max = 0;
 
     max = p*q;
     phi_max = (p-1)*(q-1);
@@ -81,7 +81,7 @@ void rsa_genKeys(struct public_key_class *pub, struct private_key_class *priv)
         d = d+phi_max;
     }
 
-    printf("primes are %lld and %lld\n",(long long)p, (long long )q);
+    printf("primes are %lld and %lld\n",(unsigned long long)p, (unsigned long long )q);
     // We now store the public / private keys in the appropriate structs
     pub->modulus = max;
     pub->exponent = e;
@@ -93,7 +93,7 @@ void rsa_genKeys(struct public_key_class *pub, struct private_key_class *priv)
 
 // Calling this function will generate a public and private key and store them in the pointers
 // it is given. 
-void rsa_gen_keys(struct public_key_class *pub, struct private_key_class *priv, char *PRIME_SOURCE_FILE)
+void rsa_gen_keys(struct public_key_class *pub, struct private_key_class *priv, unsigned char *PRIME_SOURCE_FILE)
 {
     FILE *primes_list;
     if(!(primes_list = fopen(PRIME_SOURCE_FILE, "r"))){
@@ -102,7 +102,7 @@ void rsa_gen_keys(struct public_key_class *pub, struct private_key_class *priv, 
     }
 
     // count number of primes in the list
-    long long prime_count = 0;
+    unsigned long long prime_count = 0;
     do{
         int bytes_read = fread(buffer,1,sizeof(buffer)-1, primes_list);
         buffer[bytes_read] = '\0';
@@ -117,14 +117,14 @@ void rsa_gen_keys(struct public_key_class *pub, struct private_key_class *priv, 
 
     // choose random primes from the list, store them as p,q
 
-    long long p = 76213;
-    long long q = 19553;
+    unsigned long long p = 76213;
+    unsigned long long q = 19553;
 
-    long long e = powl(2, 8) + 1;
-    long long d = 0;
-    //char prime_buffer[MAX_DIGITS];
-    long long max = 0;
-    long long phi_max = 0;
+    unsigned long long e = powl(2, 8) + 1;
+    unsigned long long d = 0;
+    //unsigned char prime_buffer[MAX_DIGITS];
+    unsigned long long max = 0;
+    unsigned long long phi_max = 0;
 
     //    srand(time(NULL));
     //
@@ -168,7 +168,7 @@ void rsa_gen_keys(struct public_key_class *pub, struct private_key_class *priv, 
         d = d+phi_max;
     }
 
-    printf("primes are %lld and %lld\n",(long long)p, (long long )q);
+    printf("primes are %lld and %lld\n",(unsigned long long)p, (unsigned long long )q);
     // We now store the public / private keys in the appropriate structs
     pub->modulus = max;
     pub->exponent = e;
@@ -178,16 +178,16 @@ void rsa_gen_keys(struct public_key_class *pub, struct private_key_class *priv, 
 }
 
 
-long long *rsa_encrypt(const char *message, const unsigned long message_size, 
-        const struct public_key_class *pub)
+unsigned long long *rsa_encrypt(unsigned char *message, unsigned long message_size,
+        struct public_key_class *pub)
 {
-    long long *encrypted = malloc(sizeof(long long)*message_size);
+    unsigned long long *encrypted = malloc(sizeof(unsigned long long)*message_size);
     if(encrypted == NULL){
         fprintf(stderr,
                 "Error: Heap allocation failed.\n");
         return NULL;
     }
-    long long i = 0;
+    unsigned long long i = 0;
     for(i=0; i < message_size; i++){
         encrypted[i] = rsa_modExp(message[i], pub->exponent, pub->modulus);
     }
@@ -195,30 +195,30 @@ long long *rsa_encrypt(const char *message, const unsigned long message_size,
 }
 
 
-char *rsa_decrypt(const long long *message, 
-        const unsigned long message_size,
-        const struct private_key_class *priv)
+unsigned char *rsa_decrypt(unsigned long long *message,
+        unsigned long message_size,
+        struct private_key_class *priv)
 {
-    if(message_size % sizeof(long long) != 0){
+    if(message_size % sizeof(unsigned long long) != 0){
         fprintf(stderr,
-                "Error: message_size is not divisible by %d, so cannot be output of rsa_encrypt\n", (int)sizeof(long long));
+                "Error: message_size is not divisible by %d, so cannot be output of rsa_encrypt\n", (int)sizeof(unsigned long long));
         return NULL;
     }
-    // We allocate space to do the decryption (temp) and space for the output as a char array
+    // We allocate space to do the decryption (temp) and space for the output as a unsigned char array
     // (decrypted)
-    char *decrypted = malloc(message_size/sizeof(long long));
-    char *temp = malloc(message_size);
+    unsigned char *decrypted = malloc(message_size/sizeof(unsigned long long));
+    unsigned char *temp = malloc(message_size);
     if((decrypted == NULL) || (temp == NULL)){
         fprintf(stderr,
                 "Error: Heap allocation failed.\n");
         return NULL;
     }
     // Now we go through each 8-byte chunk and decrypt it.
-    long long i = 0;
+    unsigned long long i = 0;
     for(i=0; i < message_size/8; i++){
         temp[i] = rsa_modExp(message[i], priv->exponent, priv->modulus);
     }
-    // The result should be a number in the char range, which gives back the original byte.
+    // The result should be a number in the unsigned char range, which gives back the original byte.
     // We put that into decrypted, then return.
     for(i=0; i < message_size/8; i++){
         decrypted[i] = temp[i];

@@ -9,36 +9,36 @@ int main(int argc, char **argv)
     struct private_key_class priv[1];
     rsa_genKeys(pub, priv);
 
-    printf("Private Key:\n Modulus: %lld\n Exponent: %lld\n", (long long)priv->modulus, (long long) priv->exponent);
-    printf("Public Key:\n Modulus: %lld\n Exponent: %lld\n", (long long)pub->modulus, (long long) pub->exponent);
+    printf("Private Key:\n Modulus: %lld\n Exponent: %lld\n", priv->modulus, priv->exponent);
+    printf("Public Key:\n Modulus: %lld\n Exponent: %lld\n", pub->modulus, pub->exponent);
 
     //char message[] = "123abc";
-    unsigned char message[8] = {0x48, 0x52, 0x05, 0x03, 0x01, 0x24, 0x3E, 0x00};
+    unsigned char message[8] = {0xFF, 0x52, 0x05, 0x03, 0x01, 0x24, 0x3E, 0xFF};
     int i;
 
     printf("Original:\n");
     for(i=0; i < 8; i++){
-        printf("%02X\n", (long long)message[i]);
+        printf("%02X\n", message[i]);
     }
 
-    long long *encrypted = rsa_encrypt(message, sizeof(message), pub);
+    unsigned long long*encrypted = rsa_encrypt(message, sizeof(message), pub);
     if (!encrypted){
         fprintf(stderr, "Error in encryption!\n");
         return 1;
     }
     printf("Encrypted:\n");
     for(i=0; i < 8; i++){
-        printf("%X\n", (long long)encrypted[i]);
+        printf("%X\n", encrypted[i]);
     }
 
-    char *decrypted = rsa_decrypt(encrypted, 8*8, priv);
+    unsigned char *decrypted = rsa_decrypt(encrypted, 8*8, priv);
     if (!decrypted){
         fprintf(stderr, "Error in decryption!\n");
         return 1;
     }
     printf("Decrypted:\n");
     for(i=0; i < 8; i++){
-        printf("%02X\n", (long long)decrypted[i]);
+        printf("%02X\n", decrypted[i]);
     }
 
     printf("\n");
